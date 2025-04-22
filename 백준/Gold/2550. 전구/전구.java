@@ -1,68 +1,82 @@
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.util.*;
 
 public class Main {
     static int N;
-    static int[] arr1;
-    static int[] arr2;
-    static int[] dp;
-    static int[] tracking;
+    static int[] arr1, arr2, dp, prev;
+
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
         N = Integer.parseInt(br.readLine());
-        arr1 = new int[N+1];
-        arr2 = new int[N+1];
+
+        arr1 = new int[N];
+        arr2 = new int[N];
+        dp = new int[N];            // LIS 값을 저장할 배열 (인덱스)
+        prev = new int[N];          // 이전 인덱스 저장
+
+        Map<Integer, Integer> map = new HashMap<>(); // arr1[i] -> index 매핑
+
         StringTokenizer st = new StringTokenizer(br.readLine());
-        for(int i =1 ; i<=N; i++){
+        for (int i = 0; i < N; i++) {
             arr1[i] = Integer.parseInt(st.nextToken());
+            map.put(arr1[i], i);
         }
+
         st = new StringTokenizer(br.readLine());
-        for(int i =1 ; i<=N; i++){
-            int num = Integer.parseInt(st.nextToken());
-            for(int j = 1; j<=N; j++){
-                if(num == arr1[j]) arr2[j] = i;
-            }
+        for (int i = 0; i < N; i++) {
+            int val = Integer.parseInt(st.nextToken());
+            arr2[i] = map.get(val); // arr2는 arr1의 인덱스 순서를 나타냄
         }
-        dp = new int[N+1];
-        tracking = new int[N+1];
 
-        for(int i=1 ; i<=N; i++){
-            int index = 0;
-            int count = 0;
-            for(int j=0 ; j<i; j++){
-                if(arr2[i] > arr2[j] && dp[j]>=count){
-                    count = dp[j];
-                    index = j;
-                }
+        // LIS 수행
+        int[] lis = new int[N];           // LIS 실제 값을 저장
+        int[] lisIndex = new int[N];      // LIS 위치에 있는 arr2 인덱스 저장
+        int length = 0;
+
+        Arrays.fill(prev, -1);
+
+        for (int i = 0; i < N; i++) {
+            int pos = lowerBound(lis, 0, length, arr2[i]);
+            lis[pos] = arr2[i];
+            lisIndex[pos] = i;
+
+            if (pos > 0) {
+                prev[i] = lisIndex[pos - 1];
             }
-            dp[i] = count+1;
-            tracking[i] = index;
+
+            if (pos == length) length++;
         }
+
+        // 역추적
+        List<Integer> result = new ArrayList<>();
+        int idx = lisIndex[length - 1];
+        while (idx != -1) {
+            result.add(arr1[arr2[idx]]);
+            idx = prev[idx];
+        }
+
+        Collections.sort(result);
+
+        // 출력
         StringBuilder sb = new StringBuilder();
-        int index = 0;
-        int max = 0;
-        for(int i = 0; i<= N; i++){
-            if(dp[i] >= max){
-                index = i;
-                max = dp[i];
-            }
-        }
-        sb.append(dp[index]).append("\n");
-        List<Integer> list = new ArrayList<>();
-        while(index != 0){
-            list.add(arr1[index]);
-            index = tracking[index];
+        sb.append(length).append("\n");
+        for (int num : result) {
+            sb.append(num).append(" ");
         }
 
-        list.sort((o1,o2)->o1-o2);
-        for(Integer i : list){
-            sb.append(i).append(" ");
+        System.out.println(sb);
+    }
+
+    // Lower Bound 이진 탐색 (arr[mid] >= target 인 최소 인덱스 반환)
+    public static int lowerBound(int[] arr, int left, int right, int target) {
+        while (left < right) {
+            int mid = (left + right) / 2;
+            if (arr[mid] < target) {
+                left = mid + 1;
+            } else {
+                right = mid;
+            }
         }
-        bw.write(sb.toString());
-        bw.close();
-        br.close();
+        return right;
     }
 }
