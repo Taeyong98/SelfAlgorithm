@@ -35,12 +35,21 @@ public class Main {
                 dp[j] = Math.max(dp[j], dp[j-costArr[i]] + memArr[i]);
             }
         }
-        for (int i = 0; i <= maximumCost; i++) {
-            if (dp[i] >= M) {
-                System.out.println(i);
-                break;
+        int left = 0;
+        int right = maximumCost;
+        int answer = -1;
+        while(left <= right){
+            int mid = (left+right)/2;
+            if(dp[mid]>=M){
+                answer = mid;
+                right = mid-1;
+            }
+            else{
+                left = mid+1;
             }
         }
+        System.out.println(answer);
+
 
     }
 }
