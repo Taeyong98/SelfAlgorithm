@@ -1,33 +1,29 @@
 import java.util.*;
 
 public class Main {
-    static final int INF = Integer.MAX_VALUE;
-
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
 
-        int n = sc.nextInt(); // 동전 종류 수
+        int n = sc.nextInt(); // 동전 개수
         int k = sc.nextInt(); // 목표 금액
 
-        Set<Integer> coinSet = new HashSet<>();
+        int[] coins = new int[n];
         for (int i = 0; i < n; i++) {
-            coinSet.add(sc.nextInt()); // 중복 제거
+            coins[i] = sc.nextInt();
         }
 
         int[] dp = new int[k + 1];
-        Arrays.fill(dp, INF);
-        dp[0] = 0;
+        Arrays.fill(dp, 1000000000); // 큰 값으로 초기화
+        dp[0] = 0; // 0원을 만들기 위한 동전 수는 0
 
-        for (int i = 0; i <= k; i++) {
-            if (dp[i] == INF) continue;
-
-            for (int coin : coinSet) {
-                if (i + coin <= k) {
-                    dp[i + coin] = Math.min(dp[i + coin], dp[i] + 1);
-                }
+        for (int i = 0; i < n; i++) {
+            int w = coins[i];
+            if (w <= k) dp[w] = 1; // 해당 동전 1개로 만들 수 있는 경우
+            for (int j = w + 1; j <= k; j++) {
+                dp[j] = Math.min(dp[j], dp[j - w] + 1);
             }
         }
 
-        System.out.println(dp[k] == INF ? -1 : dp[k]);
+        System.out.println(dp[k] == 1000000000 ? -1 : dp[k]);
     }
 }
